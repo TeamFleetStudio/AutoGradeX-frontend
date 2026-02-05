@@ -41,7 +41,7 @@ COPY --from=builder /app/public ./public
 COPY package*.json ./
 
 # Set environment
-ENV NODE_ENV=development
+ENV NODE_ENV=production
 EXPOSE 3000
 
 # Use dumb-init to handle signals
