@@ -15,14 +15,10 @@ ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 ENV NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
 ENV NEXT_PUBLIC_GOOGLE_CLIENT_ID=${NEXT_PUBLIC_GOOGLE_CLIENT_ID}
 ENV NEXT_PUBLIC_GOOGLE_CALLBACK_URL=${NEXT_PUBLIC_GOOGLE_CALLBACK_URL}
-
-# :exclamation: DO NOT set NODE_ENV=production here
-# We need devDependencies for building Next.js + Tailwind
+ENV NODE_ENV=production
 
 COPY package*.json ./
-
-# Install ALL deps including devDependencies
-RUN npm ci --include=dev
+RUN npm ci
 
 COPY . .
 RUN npm run build
@@ -33,25 +29,22 @@ RUN npm run build
 FROM node:20-alpine
 WORKDIR /app
 
-RUN apk add --no-cache dumb-init
+RUN apk add --no-cache dumb-init curl
 
 # Copy only what's needed
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
-COPY package*.json ./
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/package-lock.json ./package-lock.json
 
 # Set production env
 ENV NODE_ENV=production
 
-# Copy startup script
-COPY start.sh /app/start.sh
-RUN chmod +x /app/start.sh
-
 EXPOSE 3000
 
 ENTRYPOINT ["dumb-init", "--"]
-CMD ["/app/start.sh"]
+CMD ["npm", "start"]
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3000', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})" || exit 1
+  CMD curl -f http://localhost:3000/ || exit 1
