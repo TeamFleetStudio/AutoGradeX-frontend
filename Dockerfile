@@ -41,11 +41,17 @@ COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY package*.json ./
 
-# Now set production mode
+# Set production env
+ENV NODE_ENV=production
+
+# Copy startup script
+COPY start.sh /app/start.sh
+RUN chmod +x /app/start.sh
+
 EXPOSE 3000
 
 ENTRYPOINT ["dumb-init", "--"]
-CMD ["npm", "start"]
+CMD ["/app/start.sh"]
 
-HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3000', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})" || exit 1
