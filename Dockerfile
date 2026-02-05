@@ -1,6 +1,21 @@
 # Build stage
 FROM node:18-alpine AS builder
 WORKDIR /app
+
+# Define build arguments for Next.js public environment variables
+ARG NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_APP_URL
+ARG NEXT_PUBLIC_GOOGLE_CLIENT_ID
+ARG NEXT_PUBLIC_GITHUB_CLIENT_ID
+ARG NEXT_PUBLIC_GOOGLE_CALLBACK_URL
+
+# Set environment variables from build args
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
+ENV NEXT_PUBLIC_GOOGLE_CLIENT_ID=$NEXT_PUBLIC_GOOGLE_CLIENT_ID
+ENV NEXT_PUBLIC_GITHUB_CLIENT_ID=$NEXT_PUBLIC_GITHUB_CLIENT_ID
+ENV NEXT_PUBLIC_GOOGLE_CALLBACK_URL=$NEXT_PUBLIC_GOOGLE_CALLBACK_URL
+
 COPY package*.json ./
 RUN npm ci
 COPY . .
@@ -26,7 +41,7 @@ COPY --from=builder /app/public ./public
 COPY package*.json ./
 
 # Set environment
-ENV NODE_ENV=production
+ENV NODE_ENV=development
 EXPOSE 3000
 
 # Use dumb-init to handle signals
