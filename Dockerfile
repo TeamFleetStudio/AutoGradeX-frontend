@@ -15,11 +15,17 @@ ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 ENV NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
 ENV NEXT_PUBLIC_GOOGLE_CLIENT_ID=${NEXT_PUBLIC_GOOGLE_CLIENT_ID}
 ENV NEXT_PUBLIC_GOOGLE_CALLBACK_URL=${NEXT_PUBLIC_GOOGLE_CALLBACK_URL}
+<<<<<<< HEAD
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
+=======
+>>>>>>> 411a28b0df7caf3573ca41ea8f694e0f47c9187f
 
 COPY package*.json ./
-RUN npm ci
+RUN npm ci --include=dev
+
+# Set NODE_ENV after installing dependencies to ensure devDependencies are available for build
+ENV NODE_ENV=production
 
 COPY . .
 RUN npm run build
