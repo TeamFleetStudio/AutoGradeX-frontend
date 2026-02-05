@@ -1,37 +1,47 @@
+# ========================
 # Build stage
+# ========================
 FROM node:20-alpine AS builder
 WORKDIR /app
 
-# Define build arguments for Next.js public environment variables
+# Build args for Next.js public env
 ARG NEXT_PUBLIC_API_URL
 ARG NEXT_PUBLIC_APP_URL
 ARG NEXT_PUBLIC_GOOGLE_CLIENT_ID
 ARG NEXT_PUBLIC_GOOGLE_CALLBACK_URL
 
-# Set environment variables from build args
+# Set envs for Next.js build
 ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
 ENV NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
 ENV NEXT_PUBLIC_GOOGLE_CLIENT_ID=${NEXT_PUBLIC_GOOGLE_CLIENT_ID}
 ENV NEXT_PUBLIC_GOOGLE_CALLBACK_URL=${NEXT_PUBLIC_GOOGLE_CALLBACK_URL}
-ENV NODE_ENV=production
+
+# :exclamation: DO NOT set NODE_ENV=production here
+# We need devDependencies for building Next.js + Tailwind
 
 COPY package*.json ./
-RUN npm ci
+
+# Install ALL deps including devDependencies
+RUN npm ci --include=dev
+
 COPY . .
 RUN npm run build
 
+# ========================
 # Production stage
+# ========================
 FROM node:20-alpine
 WORKDIR /app
 
 RUN apk add --no-cache dumb-init
 
+# Copy only what's needed
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY package*.json ./
 
-ENV NODE_ENV=production
+# Now set production mode
 EXPOSE 3000
 
 ENTRYPOINT ["dumb-init", "--"]
