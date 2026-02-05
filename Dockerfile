@@ -52,5 +52,5 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
 
 ENTRYPOINT ["dumb-init", "--"]
 
-# Use npm start which respects PORT environment variable
-CMD ["npm", "start"]
+# Force port 3000 by setting it in the command, not ENV
+CMD ["sh", "-c", "PORT=3000 npm start"]
