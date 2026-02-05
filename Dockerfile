@@ -19,10 +19,7 @@ ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
 COPY package*.json ./
-RUN npm ci --include=dev
-
-# Set NODE_ENV after installing dependencies to ensure devDependencies are available for build
-ENV NODE_ENV=production
+RUN npm ci
 
 COPY . .
 RUN npm run build
@@ -36,20 +33,22 @@ WORKDIR /app
 RUN apk add --no-cache dumb-init curl
 
 # Copy only what's needed for production
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/node_modules ./node_modules
 
 # Set production env
 ENV NODE_ENV=production
-ENV HOSTNAME=0.0.0.0
 ENV PORT=3000
 
 EXPOSE 3000
 
-# Health check BEFORE CMD
+# Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
   CMD curl -f http://localhost:3000/ || exit 1
 
 ENTRYPOINT ["dumb-init", "--"]
-CMD ["node", "server.js"]
+
+# Use npm start which respects PORT environment variable
+CMD ["npm", "start"]

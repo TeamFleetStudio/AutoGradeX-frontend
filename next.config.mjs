@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Output standalone for Docker deployment
-  output: 'standalone',
+  // Don't use standalone - it has binding issues in containers
+  // output: 'standalone',
   
   // Disable ESLint during build (run separately in CI)
   eslint: {
