@@ -461,7 +461,7 @@ export default function CreateQuizPage() {
                   <SelectContent>
                     {courses.map((course) => (
                       <SelectItem key={course.id} value={course.code}>
-                        {course.code} - {course.title}
+                        {course.code} - {course.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
